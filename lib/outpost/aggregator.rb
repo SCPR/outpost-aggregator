@@ -2,6 +2,9 @@ require "outpost/aggregator/version"
 
 module Outpost
   module Aggregator
-    # Your code goes here...
+    module Rails
+      class Engine < ::Rails::Engine
+      end
+    end
   end
 end
