@@ -26,7 +26,7 @@ the hidden input for the JSON string, and then initialize the Aggregator with
 bootstrapped content. Using simple_form, and assuming the record's association
 is called "content" (which is the default), it might look like this:
 
-```ruby
+```erb
 <div id="aggregator" class="aggregator"></div>
 <%= f.input :content_json, as: :hidden, input_html: { id: "content_json" } %>
 
