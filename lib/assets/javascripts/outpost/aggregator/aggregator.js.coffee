@@ -2,8 +2,8 @@
 # outpost.Aggregator
 #
 # Hooks into ContentAPI to help YOU, our loyal
-# customer, aggregate SCPR content for various
-# purposes (eg. homepage, missed it buckets)
+# customer, aggregate content for various
+# purposes
 # 
 # Made up of basically two parts:
 # * The "DropZone", where content will be dropped
@@ -35,7 +35,7 @@ class outpost.Aggregator
         
         @baseView = new outpost.Aggregator.Views.Base _.extend options.view || {},
             el: @el
-            collection: new scpr.ContentAPI[apiClass](json)
+            collection: new outpost.ContentAPI[apiClass](json)
             input: @input
             apiClass: apiClass
             params: @options.params
@@ -61,14 +61,14 @@ class outpost.Aggregator
                 
                 # @foundCollection is the collection for all the content
                 # in the RIGHT panel.
-                @foundCollection = new scpr.ContentAPI[@options.apiClass]()
+                @foundCollection = new outpost.ContentAPI[@options.apiClass]()
         
             #---------------------
             # Import a URL and turn it into content
             # Let the caller handle what happens after the request
             # via callbacks
             importUrl: (url, callbacks={}) ->
-                $.getJSON("#{scpr.PUBLIC_API_ROOT}/content/by_url", { url: url })
+                $.getJSON(outpost.ContentAPI.ContentCollection.prototype.url + "/by_url", { url: url })
                    .success((data, textStatus, jqXHR)      -> callbacks.success?(data))
                    .error((jqXHR, textStatus, errorThrown) -> callbacks.error?(jqXHR))
                    .complete((jqXHR, status)               -> callbacks.complete?(jqXHR))
@@ -301,7 +301,7 @@ class outpost.Aggregator
             # ContentFull view for the DropZone,
             # then append it to @el and @collection
             buildFromData: (data) ->
-                model = new scpr.ContentAPI.Content(data)
+                model = new outpost.ContentAPI.Content(data)
 
                 # If the model doesn't already exist, then add it,
                 # render it, highlight it
@@ -453,7 +453,7 @@ class outpost.Aggregator
                 
                 # Grab Recent Content using ContentAPI
                 # Render the list
-                @collection = new scpr.ContentAPI[@base.options.apiClass]()
+                @collection = new outpost.ContentAPI[@base.options.apiClass]()
                 
                 # Add just the added model to @base.foundCollection
                 @collection.bind "add", (model, collection, options) =>

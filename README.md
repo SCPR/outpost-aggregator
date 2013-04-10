@@ -38,6 +38,54 @@ is called "content" (which is the default), it might look like this:
 </script>
 ```
 
+You should also define an `outpost.ContentAPI`, which should look something like this:
+
+```coffee
+class outpost.ContentAPI
+
+    #-----------------------------
+
+    class @Content extends Backbone.Model
+        #----------
+        # simpleJSON is an object of just the attributes
+        # we care about for SCPRv4. Everything else will
+        # filled out server-side.
+        simpleJSON: ->
+            {
+                id:       @get 'id'
+                position: @get 'position'
+            }
+    
+    #-----------------------------
+    
+    class @ContentCollection extends Backbone.Collection
+        url: "/api/content/"
+        model: ContentAPI.Content
+            
+        #----------
+        # Sort by position attribute
+        comparator: (model) ->
+            model.get 'position'
+        
+        #----------
+        # An array of content turned into simpleJSON. See
+        # Content#simpleJSON for more.
+        simpleJSON: ->
+            contents = []
+            @each (content) -> contents.push(content.simpleJSON())
+            contents
+
+    #-----------------------------
+    
+    class @PrivateContentCollection extends @ContentCollection
+        url: "/api/private/content"
+        
+    #-----------------------------
+```
+
+Your API should have a `by_url` path, and should accept query params for 
+the search and URL import to work.
+
 ## Contributing
 
 1. Fork it
