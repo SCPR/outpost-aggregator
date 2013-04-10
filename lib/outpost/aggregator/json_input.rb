@@ -6,34 +6,14 @@ module Outpost
       module ClassMethods
         def accepts_json_input_for_content(options={})
           include InstanceMethodsOnActivation
-
           @content_association_name = options[:name] || :content
-          @content_association_join_class = self.reflect_on_association(@content_association_name).klass
-          
-          @content_association_join_class.send :include, JoinModelMethodsOnActivation
         end
 
 
         def content_association_name
           @content_association_name
         end
-
-
-        def content_association_join_class
-          @content_association_join_class
-        end
       end
-
-
-      module JoinModelMethodsOnActivation
-        def simple_json
-          @simple_json ||= {
-            "id"          => self.content.try(:obj_key),
-            "position"    => self.position.to_i
-          }
-        end
-      end
-
 
       module InstanceMethodsOnActivation
         def content_changed?

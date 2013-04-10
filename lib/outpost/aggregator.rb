@@ -1,5 +1,6 @@
 require "outpost/aggregator/version"
 require "outpost/aggregator/json_input"
+require "outpost/aggregator/simple_json"
 
 module Outpost
   module Aggregator
