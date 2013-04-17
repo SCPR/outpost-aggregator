@@ -1,6 +1,6 @@
 <div class="content-full">
   <a href="<%= @content.permalink %>" target="_blank">
-    <%- @content.asset %><%= @content.title %>
+    <%- @content.thumbnail %><%= @content.title %>
   </a> <small>(<strong><%=@content.title?.length %></strong>)</small>
 
   <div style="font-size:11px">
@@ -14,6 +14,6 @@
       <%= @content.teaser %> (<strong><%= @content.teaser?.length %></strong>)<br />
     <% end %>
 
-    (<a href="<%=@content.edit_link%>" target="_blank"><%= @content.id %></a>)
+    (<a href="<%=@content.edit_path%>" target="_blank"><%= @content.id %></a>)
   </div>
 </div>
