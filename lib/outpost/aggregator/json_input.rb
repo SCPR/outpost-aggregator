@@ -16,10 +16,6 @@ module Outpost
       end
 
       module InstanceMethodsOnActivation
-        def content_changed?
-          attribute_changed?(self.class.content_association_name.to_s)
-        end
-
         #-------------------
         # #content_json is a way to pass in a string representation
         # of a javascript object to the model, which will then be
@@ -50,6 +46,10 @@ module Outpost
           loaded_content_json = content_to_simple_json(loaded_content)
 
           if current_content_json != loaded_content_json
+            if self.respond_to?(:custom_changes)
+              self.custom_changes[self.class.content_association_name.to_s] = [current_content_json, loaded_content_json]
+            end
+
             self.changed_attributes[self.class.content_association_name.to_s] = current_content_json
             self.send("#{self.class.content_association_name}=", loaded_content)
           end
