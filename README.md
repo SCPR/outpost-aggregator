@@ -7,6 +7,12 @@ any two objects.
 
     gem 'outpost-aggregator'
 
+
+## Dependencies
+
+This is a pretty simple gem... you can probably get away with using this gem without Outpost, so I won't include it as a hard dependency, but I also won't support this usage. You'll just need to define a few methods (`obj_key`, `published?`), and setup the `window.outpost = {}` object before you include the aggregator scripts.
+
+
 ## Usage
 
 The aggregator writes a JSON string to a hidden input, and that's
