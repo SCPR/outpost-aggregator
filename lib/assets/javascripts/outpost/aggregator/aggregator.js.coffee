@@ -68,10 +68,12 @@ class outpost.Aggregator
             # Let the caller handle what happens after the request
             # via callbacks
             importUrl: (url, callbacks={}) ->
-                $.getJSON(outpost.ContentAPI[@options.apiClass].prototype.url + "/by_url", { url: url })
-                   .success((data, textStatus, jqXHR)      -> callbacks.success?(data))
-                   .error((jqXHR, textStatus, errorThrown) -> callbacks.error?(jqXHR))
-                   .complete((jqXHR, status)               -> callbacks.complete?(jqXHR))
+                $.getJSON(
+                    outpost.ContentAPI[@options.apiClass].prototype.url + "/by_url", 
+                    _.extend @options.params, { url: url })
+                .success((data, textStatus, jqXHR)      -> callbacks.success?(data))
+                .error((jqXHR, textStatus, errorThrown) -> callbacks.error?(jqXHR))
+                .complete((jqXHR, status)               -> callbacks.complete?(jqXHR))
 
                 true
                 
