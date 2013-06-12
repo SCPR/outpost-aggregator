@@ -1,11 +1,11 @@
 <div class="content-full">
-  <a href="<%= @content.permalink %>" target="_blank">
+  <a href="<%= @content.public_url %>" target="_blank">
     <%- @content.thumbnail %><%= @content.title %>
   </a> <small>(<strong><%=@content.title?.length %></strong>)</small>
 
   <div style="font-size:11px">
-    <strong><%= @content.byline %></strong> - <% if @content.published_at?: %>
-      <%= moment(@content.published_at).format("YYYY-MM-DD, h:mma") %>
+    <strong><%= @content.byline %></strong> - <% if @content.public_datetime?: %>
+      <%= moment(@content.public_datetime).format("YYYY-MM-DD, h:mma") %>
     <% else: %>
       <span class="text-error"><strong>UNPUBLISHED</strong></span>
     <% end %><br />
@@ -14,6 +14,6 @@
       <%= @content.teaser %> (<strong><%= @content.teaser?.length %></strong>)<br />
     <% end %>
 
-    (<a href="<%=@content.edit_path%>" target="_blank"><%= @content.id %></a>)
+    (<a href="<%=@content.edit_url%>" target="_blank"><%= @content.id %></a>)
   </div>
 </div>

@@ -1,15 +1,15 @@
 <div class="content-small">
-  <a href="<%= @content.permalink %>" target="_blank">
+  <a href="<%= @content.public_url %>" target="_blank">
     <%- @content.thumbnail %><%= @content.title %>
   </a>
 
   <div style="font-size:11px;">
-    <% if @content.published_at?: %>
-      <%= moment(@content.published_at).format("YYYY-MM-DD, h:mma") %>
+    <% if @content.public_datetime?: %>
+      <%= moment(@content.public_datetime).format("YYYY-MM-DD, h:mma") %>
     <% else: %>
       <span class="text-error"><strong>UNPUBLISHED</strong></span>
     <% end %>
   
-    (<a href="<%=@content.edit_path%>" target="_blank"><%= @content.id %></a>)
+    (<a href="<%=@content.edit_url%>" target="_blank"><%= @content.id %></a>)
   </div>
 </div>
