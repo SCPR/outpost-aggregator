@@ -10,7 +10,15 @@ any two objects.
 
 ## Dependencies
 
-This is a pretty simple gem... you can probably get away with using this gem without Outpost, so I won't include it as a hard dependency, but I also won't support this usage. You'll just need to define a few methods (`obj_key`, `published?`), and setup the `window.outpost = {}` object before you include the aggregator scripts.
+This is a pretty simple gem... you can probably get away with using this gem without Outpost. Just be sure you have a few things setup:
+
+* A client-side `window.outpost` object for the javascript.
+* `Outpost.obj_by_key` - to find an object by the passed-in object key.
+  This is defined in outpost.
+* The join model must respond to `position` and `obj_key` if you want to
+  use the SimpleJson module. This module is dead-simple, so you definitely
+  could just copy and paste its contents into your model and customize it
+  there.
 
 
 ## Usage
@@ -21,11 +29,11 @@ what gets submitted to and parsed by the server.
 In your model:
 
 ```ruby
-has_many :content, class_name: "PostContent", order: "position", dependent: :destroy
-accepts_json_input_for_content
+class Post < ActiveRecord::Base
+  has_many :related_posts, order: "position", dependent: :destroy
+  accepts_json_input_for :related_posts
+end
 ```
-
-You can provide a `name` option to the `accepts_json_input_for_content` method if the association is named something different.
 
 In the form, you need to provide a div for the aggregator to be built in,
 the hidden input for the JSON string, and then initialize the Aggregator with
@@ -34,17 +42,17 @@ is called "content" (which is the default), it might look like this:
 
 ```erb
 <div id="aggregator" class="aggregator"></div>
-<%= f.input :content_json, as: :hidden, input_html: { id: "content_json" } %>
+<%= f.input :related_posts_json, as: :hidden, input_html: { id: "related_posts_json" } %>
 
 <script>
     aggregator = new outpost.Aggregator(
-      "#aggregator", "#content_json",
-      <%= j record.content.includes(:content).map(&:content).to_json.html_safe %>, 
+      "#aggregator", "#related_posts_json",
+      <%= j record.related_posts.includes(:post).map(&:post).to_json.html_safe %>, 
       <%= raw options.to_json %>);
 </script>
 ```
 
-You should also define an `outpost.ContentAPI`, which should look something like this:
+You should also define an `outpost.ContentAPI`, to tell the Aggregator how to get in touch with your server.
 
 ```coffee
 class outpost.ContentAPI
@@ -91,6 +99,14 @@ class outpost.ContentAPI
 
 Your API should have a `by_url` path, and should accept query params for 
 the search and URL import to work.
+
+See the `content_full` and `content_small` templates to see what the aggregator
+expects the response object to look.
+
+
+## TODO
+* Write tests
+
 
 ## Contributing
 

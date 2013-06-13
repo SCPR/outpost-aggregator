@@ -4,72 +4,70 @@ module Outpost
       extend ActiveSupport::Concern
 
       module ClassMethods
-        def accepts_json_input_for_content(options={})
+        def accepts_json_input_for(name)
           include InstanceMethodsOnActivation
-          @content_association_name = options[:name] || :content
-        end
 
+          # The current collection as simple_json
+          define_method "current_#{name}_json" do
+            current_json_for(name)
+          end
 
-        def content_association_name
-          @content_association_name
+          # The current collection as simple_json and then
+          # converted to real JSON.
+          define_method "#{name}_json" do
+            current_json_for(name).to_json
+          end
+
+          define_method "#{name}_json=" do |json|
+            process_json_input_for(name.to_s, json)
+          end
         end
       end
 
+
       module InstanceMethodsOnActivation
-        #-------------------
-        # #content_json is a way to pass in a string representation
-        # of a javascript object to the model, which will then be
-        # parsed and turned into content objects in the 
-        # #content_json= method.
-        def content_json
-          current_content_json.to_json
+        def current_json_for(name)
+          Aggregator.array_to_simple_json(self.send(name))
         end
 
-        #-------------------
-        # See AssetAssociation for more information
-        def content_json=(json)
+        def process_json_input_for(name, json)
           return if json.empty?
+          name = name.to_s
           
           json = Array(JSON.parse(json)).sort_by { |c| c["position"].to_i }
-          loaded_content = []
+          loaded = []
           
-          json.each do |content_hash|
-            # Make sure the content actually exists, and that it's
-            # published, then build the association.
-            content = Outpost.obj_by_key(content_hash["id"])
-            if content && content.published?
-              new_content = build_content_association(content_hash, content)
-              loaded_content.push new_content
+          json.each do |object_hash|
+            if object = Outpost.obj_by_key(object_hash["id"])
+              new_object = build_association_for(name, object_hash, object)
+              loaded.push(new_object) if new_object
             end
           end
 
-          loaded_content_json = content_to_simple_json(loaded_content)
-
-          if current_content_json != loaded_content_json
+          loaded_json  = Aggregator.array_to_simple_json(loaded)
+          current_json = current_json_for(name)
+          
+          if current_json != loaded_json
+            # Outpost::Version hook
             if self.respond_to?(:custom_changes)
-              self.custom_changes[self.class.content_association_name.to_s] = [current_content_json, loaded_content_json]
+              self.custom_changes[name] = [current_json, loaded_json]
             end
 
-            self.changed_attributes[self.class.content_association_name.to_s] = current_content_json
-            self.send("#{self.class.content_association_name}=", loaded_content)
+            self.changed_attributes[name] = current_json
+
+            # This actually opens a DB transaction and saves stuff.
+            # This is Rails behavior.
+            self.send("#{name}=", loaded)
           end
 
-          self.send(self.class.content_association_name)
+          self.send(name)
         end
 
 
         private
 
-        def build_content_association(content_hash, content)
-          raise "build_content_association needs to be defined in your model."
-        end
-
-        def current_content_json
-          content_to_simple_json(self.send(self.class.content_association_name))
-        end
-
-        def content_to_simple_json(array)
-          Array(array).map(&:simple_json)
+        def build_association_for(name, object_hash, object)
+          self.send("build_#{name.singularize}_association", object_hash, object)
         end
       end
     end

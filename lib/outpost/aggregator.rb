@@ -12,6 +12,10 @@ module Outpost
           end
         end
       end
+    end # Rails
+
+    def self.array_to_simple_json(array)
+      Array(array).map(&:simple_json)
     end
-  end
-end
+  end # Aggregator
+end # Outpost
