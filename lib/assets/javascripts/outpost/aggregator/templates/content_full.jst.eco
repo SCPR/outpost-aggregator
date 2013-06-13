@@ -1,5 +1,5 @@
 <div class="content-full">
-  <a href="<%= @content.public_url %>" target="_blank">
+  <a href="<%= @content.public_url or @content.edit_url %>" target="_blank">
     <%- @content.thumbnail %><%= @content.title %>
   </a> <small>(<strong><%=@content.title?.length %></strong>)</small>
 
