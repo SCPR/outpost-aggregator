@@ -9,7 +9,7 @@
     <% else: %>
       <span class="text-error"><strong>UNPUBLISHED</strong></span>
     <% end %>
-  
+
     (<a href="<%=@content.edit_url%>" target="_blank"><%= @content.id %></a>)
   </div>
 </div>

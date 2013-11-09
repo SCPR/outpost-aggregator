@@ -9,8 +9,8 @@
     <% else: %>
       <span class="text-error"><strong>UNPUBLISHED</strong></span>
     <% end %><br />
-    
-    <% if !_.isEmpty(@content.teaser)?: %> 
+
+    <% if !_.isEmpty(@content.teaser)?: %>
       <%= @content.teaser %> (<strong><%= @content.teaser?.length %></strong>)<br />
     <% end %>
 

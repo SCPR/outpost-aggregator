@@ -33,10 +33,10 @@ module Outpost
         def process_json_input_for(name, json)
           return if json.empty?
           name = name.to_s
-          
+
           json = Array(JSON.parse(json)).sort_by { |c| c["position"].to_i }
           loaded = []
-          
+
           json.each do |object_hash|
             if object = Outpost.obj_by_key(object_hash["id"])
               new_object = build_association_for(name, object_hash, object)
@@ -46,8 +46,14 @@ module Outpost
 
           loaded_json  = Aggregator.array_to_simple_json(loaded)
           current_json = current_json_for(name)
-          
+
           if current_json != loaded_json
+            # Secretary hook
+            if self.class.respond_to?(:versioned_attributes) &&
+            self.class.versioned_attributes.include?(name)
+              send("#{name}_will_change!")
+            end
+
             # This actually opens a DB transaction and saves stuff.
             # This is Rails behavior.
             self.send("#{name}=", loaded)

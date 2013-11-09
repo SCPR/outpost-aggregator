@@ -4,7 +4,7 @@
 # Hooks into ContentAPI to help YOU, our loyal
 # customer, aggregate content for various
 # purposes
-# 
+#
 # Made up of basically two parts:
 # * The "DropZone", where content will be dropped
 #   and sorted and generally managed.
@@ -18,21 +18,21 @@ class outpost.Aggregator
     @TemplatePath = "outpost/aggregator/templates/"
 
     #---------------------
-    
+
     defaults:
         apiType: "public"
         params: {}
         viewOptions: {}
-        
+
     constructor: (el, input, json, options={}) ->
         @options = _.defaults options, @defaults
-        
+
         @el    = $(el)
         @input = $(input)
-        
+
         # Set the type of API we're dealing with
         apiClass = if @options.apiType is "public" then "ContentCollection" else "PrivateContentCollection"
-        
+
         @baseView = new outpost.Aggregator.Views.Base _.extend options.view || {},
             el: @el
             collection: new outpost.ContentAPI[apiClass](json)
@@ -40,10 +40,10 @@ class outpost.Aggregator
             apiClass: apiClass
             params: @options.params
             viewOptions: @options.viewOptions
-            
+
         @baseView.render()
-        
-        
+
+
     #----------------------------------
     # Views!
     class @Views
@@ -53,49 +53,49 @@ class outpost.Aggregator
             template: JST[Aggregator.TemplatePath + 'base']
             defaults:
                 active: "recent"
-                    
+
             #---------------------
-        
+
             initialize: ->
                 @options = _.defaults @options, @defaults
-                
+
                 # @foundCollection is the collection for all the content
                 # in the RIGHT panel.
                 @foundCollection = new outpost.ContentAPI[@options.apiClass]()
-        
+
             #---------------------
             # Import a URL and turn it into content
             # Let the caller handle what happens after the request
             # via callbacks
             importUrl: (url, callbacks={}) ->
                 $.getJSON(
-                    outpost.ContentAPI[@options.apiClass].prototype.url + "/by_url", 
+                    outpost.ContentAPI[@options.apiClass].prototype.url + "/by_url",
                     _.extend @options.params, { url: url })
                 .success((data, textStatus, jqXHR)      -> callbacks.success?(data))
                 .error((jqXHR, textStatus, errorThrown) -> callbacks.error?(jqXHR))
                 .complete((jqXHR, status)               -> callbacks.complete?(jqXHR))
 
                 true
-                
+
             #---------------------
-            
+
             render: ->
                 # Build the skeleton. We'll fill everything in next.
                 @$el.html @template(active: @options.active)
-                            
+
                 # Build each of the tabs
                 @recentContent = new outpost.Aggregator.Views.RecentContent(base: @)
                 @search        = new outpost.Aggregator.Views.Search(base: @)
                 @url           = new outpost.Aggregator.Views.URL(base: @)
-                
+
                 # Build the Drop Zone section
                 @dropZone = new outpost.Aggregator.Views.DropZone
                     collection: @collection # The bootstrapped content
                     base: @
-                    
+
                 @
-                
-                
+
+
         #----------------------------------
         # The drop-zone!
         # Gets filled with ContentFull views
@@ -105,46 +105,46 @@ class outpost.Aggregator
             tagName: 'ul'
             attributes:
                 class: "drop-zone well"
-            
+
             # Define alerts as functions
             @Alerts:
                 success: (el, data) ->
-                    new outpost.Notification(el, "success", 
+                    new outpost.Notification(el, "success",
                         "<strong>Success!</strong> Imported #{data.id}")
 
                 alreadyExists: (el) ->
-                    new outpost.Notification(el, "warning", 
+                    new outpost.Notification(el, "warning",
                         "That content is already in the drop zone.")
 
                 invalidUrl: (el, url) ->
-                    new outpost.Notification(el, "error", 
+                    new outpost.Notification(el, "error",
                         "<strong>Failure.</strong> Invalid URL (#{url})")
 
-                error: (el) -> 
-                    new outpost.Notification(el, "error", 
+                error: (el) ->
+                    new outpost.Notification(el, "error",
                         "<strong>Error.</strong> Try the Search tab.")
 
             #---------------------
-            
+
             initialize: ->
                 @base = @options.base
-                
+
                 # Setup the container, render the template,
                 # and then add in the el (the list)
                 @container = $(@container)
                 @container.html @template
                 @container.append @$el
                 @helper = $("<h1 />").html("Drop Content Here")
-                
+
                 @render()
-                
+
                 # Register listeners for URL droppage
                 @dragOver = false
                 @$el.on "dragenter", (event)  => @_dragEnter(event)
                 @$el.on "dragleave", (event)  => @_dragLeave(event)
                 @$el.on "dragover", (event)   => @_dragOver(event)
                 @$el.on "drop", (event)       => @importUrl(event)
-                
+
                 # Listeners for @collection events triggered
                 # by Backbone
                 @collection.bind "add remove reorder", =>
@@ -162,14 +162,14 @@ class outpost.Aggregator
                         sortIn  = true
                         dropped = false
                         ui.item.addClass("dragging")
-                    
+
                     # Called whenever an item is moved and is over the
                     # DropZone.
                     over: (event, ui) ->
                         sortIn = true
                         ui.item.addClass("adding")
                         ui.item.removeClass("removing")
-                    
+
                     # This one gets called both when the item moves out of
                     # the dropzone, AND when the item is dropped inside of
                     # the dropzone. I don't know why jquery-ui decided to
@@ -182,28 +182,28 @@ class outpost.Aggregator
                         # in the dropzone, then add the "removing" class.
                         # Also stop any animation immediately.
                         #
-                        # If "drop event" is the case but the element came 
+                        # If "drop event" is the case but the element came
                         # from somewhere else, then don't add the "removing"
-                        # class. 
+                        # class.
                         if !dropped && ui.sender[0] == @$el[0]
                             sortIn = false
                             ui.item.stop(false, true)
                             ui.item.addClass("removing")
-                        
+
                         ui.item.removeClass("adding")
-                    
+
                     # When dragging (sorting) stops, only if the item
                     # being dragged belongs to the original list
                     # Before placeholder disappears
                     beforeStop: (event, ui) =>
                         dropped = true
-                        
+
                     # When an item from another list is dropped into this
                     # DropZone
                     # Move it from there to DropZone.
                     receive: (event, ui) =>
                         dropped = true
-                        # If we're able to move it in, Remove the dropped 
+                        # If we're able to move it in, Remove the dropped
                         # element because we're rendering the bigger, better one.
                         # Otherwise, revert the el back to the original element.
                         if @move(ui.item)
@@ -211,7 +211,7 @@ class outpost.Aggregator
                         else
                             $(ui.item).effect 'highlight', color: "#f2dede", 1500
                             $(ui.sender).sortable "cancel"
-                            
+
                     # When dragging (sorting) stops, only for items
                     # in the original list.
                     # Update the position attribute for each
@@ -236,13 +236,13 @@ class outpost.Aggregator
             _stopEvent: (event) ->
                 event.preventDefault()
                 event.stopPropagation()
-                
+
             #---------------------
             # When an element enters the zone
             _dragEnter: (event) ->
                 @_stopEvent event
                 @$el.addClass('dim')
-                
+
             #---------------------
             # dragleave has child element problems
             # When you hover over a child element,
@@ -256,7 +256,7 @@ class outpost.Aggregator
                 , 50
 
                 @_stopEvent event
-                
+
             #---------------------
             # When an element is in the zone and not yet released
             # Get continuously and rapidly fired when hovering with
@@ -265,7 +265,7 @@ class outpost.Aggregator
             _dragOver: (event) ->
                 @dragOver = true
                 @_stopEvent event
-                
+
             #---------------------
             # Proxy to @base.importUrl
             # Grabs the dropped-in URL, passes it on
@@ -276,8 +276,8 @@ class outpost.Aggregator
                 @container.spin(zIndex: 1)
                 url = event.originalEvent.dataTransfer.getData('text/uri-list')
                 alert = {}
-                
-                @base.importUrl url, 
+
+                @base.importUrl url,
                     success: (data) =>
                         if data
                             if @buildFromData(data)
@@ -286,7 +286,7 @@ class outpost.Aggregator
                                 @alert('alreadyExists')
                         else
                             @alert('invalidUrl', url)
-                        
+
                     error: (jqXHR) =>
                         @alert('error')
 
@@ -295,7 +295,7 @@ class outpost.Aggregator
                     complete: (jqXHR) =>
                         @container.spin(false)
                         @$el.removeClass('dim')
-                
+
                 false # prevent default behavior
 
             #---------------------
@@ -326,7 +326,7 @@ class outpost.Aggregator
             alert: (alertKey, args...) ->
                 notification = DropZone.Alerts[alertKey](@$el, args...)
                 notification.prepend()
-                
+
                 setTimeout ->
                     notification.fadeOut -> @remove()
                 , 5000
@@ -336,7 +336,7 @@ class outpost.Aggregator
             # Converts its view into a ContentFull view.
             move: (el) ->
                 id = el.attr("data-id")
-                
+
                 # Get the model for this DOM element
                 # and add it to the DropZone
                 # collection
@@ -348,7 +348,7 @@ class outpost.Aggregator
                     @collection.add model
                     view = new outpost.Aggregator.Views.ContentFull _.extend @base.options.viewOptions,
                         model: model
-                        
+
                     el.replaceWith view.render()
                     @highlightSuccess(view.$el)
 
@@ -363,13 +363,13 @@ class outpost.Aggregator
 
             #---------------------
             # Remove this el's model from @collection
-            # This is the only case where we want to 
+            # This is the only case where we want to
             # actually remove a view from @base.childViews
             remove: (el) ->
                 id    = el.attr("data-id")
                 model = @collection.get id
                 @collection.remove model
-            
+
             #---------------------
             # Render or hide the "Empty message" for the DropZone,
             # based on if there is content inside or not
@@ -390,12 +390,12 @@ class outpost.Aggregator
             _disableDropZoneHelper: ->
                 @$el.removeClass('empty')
                 @helper.detach()
-            
+
             #---------------------
             # Go through the li's and find the corresponding model.
             # This is how we're able to save the order based on
             # the positions in the DropZone.
-            # Note that this method uses the actual DOM, and 
+            # Note that this method uses the actual DOM, and
             # therefore requires that the list has already been
             # rendered.
             #
@@ -406,14 +406,14 @@ class outpost.Aggregator
                     id    = el.attr("data-id")
                     model = @collection.get id
                     model.set "position", el.index()
-            
+
             #---------------------
             # Update the JSON input with current collection
             updateInput: ->
                 @base.options.input.val(JSON.stringify(@collection.simpleJSON()))
 
             #---------------------
-            
+
             render: ->
                 @$el.empty()
                 @checkDropZone()
@@ -423,7 +423,7 @@ class outpost.Aggregator
                 @collection.each (model) =>
                     view = new outpost.Aggregator.Views.ContentFull _.extend @base.options.viewOptions,
                         model: model
-                        
+
                     @$el.append view.render()
 
                 # Set positions.
@@ -443,33 +443,33 @@ class outpost.Aggregator
         class @ContentList extends Backbone.View
             paginationTemplate: JST[Aggregator.TemplatePath + "_pagination"]
             errorTemplate: JST[Aggregator.TemplatePath + "error"]
-            events: 
+            events:
                 "click .pagination a": "changePage"
-            
+
             #---------------------
 
             initialize: ->
                 @base     = @options.base
                 @page     = 1
                 @per_page = @base.options.params.limit || 10
-                
+
                 # Grab Recent Content using ContentAPI
                 # Render the list
                 @collection = new outpost.ContentAPI[@base.options.apiClass]()
-                
+
                 # Add just the added model to @base.foundCollection
                 @collection.bind "add", (model, collection, options) =>
                     @base.foundCollection.add model
-                
+
                 # Add the reset collection to @base.foundCollection
                 @collection.bind "reset", (collection, options) =>
                     @base.foundCollection.add collection.models
-                
+
                 @container  = $(@container)
                 @container.html @$el
-                
+
                 @render()
-                
+
             #---------------------
             # Get the page from the DOM
             # Proxy to #request to setup params
@@ -490,11 +490,11 @@ class outpost.Aggregator
             # Also handles transitions
             _fetch: (params) ->
                 @transitionStart()
-                
+
                 @collection.fetch
                     data: _.defaults params, @base.options.params
                     success: (collection, response, options) =>
-                        # If the collection length is > 0, then 
+                        # If the collection length is > 0, then
                         # call @renderCollection().
                         # Otherwise render a notice that no results
                         # were found.
@@ -502,14 +502,14 @@ class outpost.Aggregator
                             @renderCollection()
                         else
                             @alertNoResults()
-                        
+
                         # Set the page and re-render the pagination
                         @renderPagination(params, collection)
-                        
+
                     error: (collection, xhr, options) =>
                         @alertError(xhr: xhr)
                 .always => @transitionEnd()
-                
+
                 # Return the collection
                 @collection
 
@@ -528,7 +528,7 @@ class outpost.Aggregator
                 @$el.spin(false)
 
             #---------------------
-            
+
             _stopEvent: (event) ->
                 event.preventDefault()
                 event.stopPropagation()
@@ -543,16 +543,16 @@ class outpost.Aggregator
             # Render a notice if the server returned an error
             alertError: (options={}) ->
                 xhr = options.xhr
-                
+
                 _.defaults options,
                     el: @resultsEl
                     type: "error"
                     message: @errorTemplate(xhr: xhr)
                     method: "replace"
-                    
-                alert = new outpost.Notification(options.el, 
+
+                alert = new outpost.Notification(options.el,
                     options.type, options.message)
-                    
+
                 alert[options.method]()
 
             #---------------------
@@ -563,35 +563,35 @@ class outpost.Aggregator
                     type: "notice"
                     message: "No results"
                     method: "replace"
-                    
-                alert = new outpost.Notification(options.el, 
+
+                alert = new outpost.Notification(options.el,
                     options.type, options.message)
-                    
+
                 alert[options.method]()
-            
+
             #---------------------
             # Fill in the @resultsEl with the model views
             renderCollection: ->
                 @resultsEl.empty()
-                
+
                 @collection.each (model) =>
                     view = new outpost.Aggregator.Views.ContentMinimal
                         model: model
-                        
+
                     @resultsEl.append view.render()
-                
+
                 @$el
 
             #---------------------
             # Re-render the pagination with new page values,
             # and set @page.
             #
-            # If the passed-in length is less than the requested 
-            # limit, then assume that we reached the end of the 
+            # If the passed-in length is less than the requested
+            # limit, then assume that we reached the end of the
             # results and disable the "Next" link
             renderPagination: (params, collection) ->
                 @page = params.page
-                
+
                 # Add in the pagination
                 # Prefer blank classes over "0" for consistency
                 # parseInt(null) and parseInt("") both return null
@@ -603,7 +603,7 @@ class outpost.Aggregator
                 )
 
                 @$el
-                
+
             #---------------------
             # Render the whole section.
             # This should only be called once per page load.
@@ -629,13 +629,13 @@ class outpost.Aggregator
             container: "#aggregator-recent-content"
             resultsId: "#aggregator-recent-content-results"
             template: JST[Aggregator.TemplatePath + 'recent_content']
-            
+
             #---------------------
             # Need to populate right away for Recent Content
             initialize: ->
                 super
                 @request()
-                
+
             #---------------------
             # Sets up default parameters, and then proxies to #_fetch
             request: (params={}) ->
@@ -643,17 +643,17 @@ class outpost.Aggregator
                     limit: @per_page
                     page: 1
                     query: ""
-                
+
                 @_fetch(params)
                 false # To keep consistent with Search#request
 
-                
+
         #----------------------------------
         # SEARCH?!?!
-        # This view is the entire Search section. It it made up of 
+        # This view is the entire Search section. It it made up of
         # smaller "ContentMinimal" views
         #
-        # Note that because of the Input field and pagination, 
+        # Note that because of the Input field and pagination,
         # the list of content is actually stored in @resultsEl, not @el
         #
         # @render() is for rendering the full section.
@@ -689,10 +689,10 @@ class outpost.Aggregator
                     limit: @per_page
                     page: 1
                     query: $("#aggregator-search-input", @$el).val()
-                
+
                 @_fetch(params)
                 false # to keep the Rails form from submitting
-                
+
 
         #----------------------------------
         # The URL Import view
@@ -731,11 +731,11 @@ class outpost.Aggregator
             # This overrides the default ContentList#_fetch
             _fetch: (params={}) ->
                 @transitionStart()
-                
+
                 input = $("#aggregator-url-input", @$el)
                 url   = input.val()
-                
-                @base.importUrl url, 
+
+                @base.importUrl url,
                     success: (data) =>
                         # Returns null if no record is found
                         # If no data, alert the person
@@ -745,33 +745,33 @@ class outpost.Aggregator
                             @collection.add data
                             @append @collection.get(data.id)
                             input.val("") # Empty the URL input
-                        else 
+                        else
                             @alertNoResults
                                 method: "render"
                                 message: "Invalid URL"
-                    
+
                     error: (jqXHR)    => @alertError(xhr: jqXHR)
                     complete: (jqHXR) => @transitionEnd()
-                        
+
                 false # Prevent the Rails form from submitting
 
-                
+
         #----------------------------------
         #----------------------------------
         # An abstract class from which the different
         # representations of a model should inherit
         class @ContentView extends Backbone.View
             tagName: 'li'
-            
+
             #---------------------
-            
+
             initialize: ->
                 # Add the model ID to the DOM
                 # We have to do this so that we can share content
                 # between the lists.
                 @$el.attr("data-id", @model.id)
                 @options = _.defaults @options, { template: @template }
-                
+
             #---------------------
 
             render: ->
@@ -784,7 +784,7 @@ class outpost.Aggregator
             attributes:
                 class: "content-full"
             template: 'content_full'
-            
+
         #----------------------------------
         # A single piece of recent content!
         # Just the basic info
