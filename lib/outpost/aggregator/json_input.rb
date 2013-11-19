@@ -48,13 +48,6 @@ module Outpost
           current_json = current_json_for(name)
           
           if current_json != loaded_json
-            # Outpost::Version hook
-            if self.respond_to?(:custom_changes)
-              self.custom_changes[name] = [current_json, loaded_json]
-            end
-
-            self.changed_attributes[name] = current_json
-
             # This actually opens a DB transaction and saves stuff.
             # This is Rails behavior.
             self.send("#{name}=", loaded)
