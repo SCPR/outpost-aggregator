@@ -34,12 +34,12 @@ class outpost.Aggregator
         apiClass = if @options.apiType is "public" then "ContentCollection" else "PrivateContentCollection"
 
         @baseView = new outpost.Aggregator.Views.Base _.extend options.view || {},
-            el: @el
-            collection: new outpost.ContentAPI[apiClass](json)
-            input: @input
-            apiClass: apiClass
-            params: @options.params
-            viewOptions: @options.viewOptions
+            el              : @el
+            collection      : new outpost.ContentAPI[apiClass](json)
+            input           : @input
+            apiClass        : apiClass
+            params          : @options.params
+            viewOptions     : @options.viewOptions
 
         @baseView.render()
 
@@ -53,6 +53,7 @@ class outpost.Aggregator
             template: JST[Aggregator.TemplatePath + 'base']
             defaults:
                 active: "recent"
+                dropLimit: null
 
             #---------------------
 
@@ -116,6 +117,10 @@ class outpost.Aggregator
                     new outpost.Notification(el, "warning",
                         "That content is already in the drop zone.")
 
+                limitReached: (el) ->
+                    new outpost.Notification(el, "warning",
+                        "The limit has been reached. Remove an article first.")
+
                 invalidUrl: (el, url) ->
                     new outpost.Notification(el, "error",
                         "<strong>Failure.</strong> Invalid URL (#{url})")
@@ -136,6 +141,14 @@ class outpost.Aggregator
                 @container.append @$el
                 @helper = $("<h1 />").html("Drop Content Here")
 
+                # Is there a limit? Add a notification to the top of the
+                # drop zone to let them know.
+                @limit = @options.base.options.viewOptions.dropLimit
+
+                if @limit
+                    @limitNotification =
+                        new outpost.Notification(@$el, "info", "Limit")
+
                 @render()
 
                 # Register listeners for URL droppage
@@ -151,6 +164,7 @@ class outpost.Aggregator
                     @checkDropZone()
                     @setPositions()
                     @updateInput()
+                    @updateLimitNotification()
 
                 # DropZone callbacks!!
                 sortIn  = true
@@ -335,12 +349,20 @@ class outpost.Aggregator
             # Moves a model from the "found" section into the drop zone.
             # Converts its view into a ContentFull view.
             move: (el) ->
+                # If the limit has already been reached.
+                # The updateLimitNotification() function should
+                # warn the user about this.
+                if @limitReached()
+                    @alert("limitReached")
+                    return
+
                 id = el.attr("data-id")
 
                 # Get the model for this DOM element
                 # and add it to the DropZone
                 # collection
                 model = @base.foundCollection.get id
+
                 # If the model is already in @collection, then
                 # let the user know and do not import it
                 # Otherwise, set the position and add it to the collection
@@ -412,6 +434,29 @@ class outpost.Aggregator
             updateInput: ->
                 @base.options.input.val(JSON.stringify(@collection.simpleJSON()))
 
+
+            # Check if the limit has been reached, only if it exists.
+            limitReached: ->
+                @limit and @collection.length >= @limit
+
+
+            # Updates the limit notification.
+            # Updates the count, and changes the type if necessary.
+            updateLimitNotification: ->
+                return if not @limitNotification
+
+                @limitNotification.message =
+                    "<strong>Limit:</strong> " +
+                    "#{@collection.length} / #{@limit}"
+
+                if @limitReached()
+                    @limitNotification.type = "success"
+                else
+                    @limitNotification.type = "info"
+
+                @limitNotification.rerender()
+
+
             #---------------------
 
             render: ->
@@ -421,10 +466,15 @@ class outpost.Aggregator
                 # For each model, create a new model view and append it
                 # to the el
                 @collection.each (model) =>
-                    view = new outpost.Aggregator.Views.ContentFull _.extend @base.options.viewOptions,
-                        model: model
+                    view = new outpost.Aggregator.Views.ContentFull(
+                        _.extend @base.options.viewOptions, model: model)
 
                     @$el.append view.render()
+
+                # Prepend & Update the limit notification
+                if @limitNotification
+                    @limitNotification.prepend()
+                    @updateLimitNotification()
 
                 # Set positions.
                 # setPositions depends on the DOM, so it has to be called

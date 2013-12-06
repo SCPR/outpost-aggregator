@@ -1,6 +1,13 @@
 ## 1.1.0
+### Additions
+* Added a `dropLimit`, for specifying the number of articles allowed in the
+  DropZone. By default, this is "null", which means "no limit".
+* Added notifications for Limit, and a limit counter
+
 ### Changes
 * Removed old Secretary hooks.
+* All Outpost object now have a "simple_json" method, which just returns a
+  hash with the ID. This should be overridden in most cases.
 
 
 ## 1.0.0

@@ -35,6 +35,12 @@
     overflow: auto;
   }
 
+  &.short {
+    .content-list, .help-content {
+      max-height: 200px;
+    }
+  }
+
   .help-content {
     padding-right: 10px;
   }

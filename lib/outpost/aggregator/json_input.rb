@@ -48,12 +48,6 @@ module Outpost
           current_json = current_json_for(name)
 
           if current_json != loaded_json
-            # Secretary hook
-            if self.class.respond_to?(:versioned_attributes) &&
-            self.class.versioned_attributes.include?(name)
-              send("#{name}_will_change!")
-            end
-
             # This actually opens a DB transaction and saves stuff.
             # This is Rails behavior.
             self.send("#{name}=", loaded)
