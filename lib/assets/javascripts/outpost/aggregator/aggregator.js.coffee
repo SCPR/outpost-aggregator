@@ -143,7 +143,7 @@ class outpost.Aggregator
 
                 # Is there a limit? Add a notification to the top of the
                 # drop zone to let them know.
-                @limit = @options.base.options.viewOptions.dropLimit
+                @limit = @options.limit
 
                 if @limit
                     @limitNotification =
