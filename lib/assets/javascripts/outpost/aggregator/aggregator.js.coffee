@@ -171,6 +171,9 @@ class outpost.Aggregator
                 dropped = false
 
                 @$el.sortable
+                    # Which items are sortable
+                    items: ".sortable",
+
                     # When dragging (sorting) starts
                     start: (event, ui) ->
                         sortIn  = true
@@ -812,6 +815,7 @@ class outpost.Aggregator
         # representations of a model should inherit
         class @ContentView extends Backbone.View
             tagName: 'li'
+            className: 'sortable'
 
             #---------------------
 
@@ -831,16 +835,14 @@ class outpost.Aggregator
         # A single piece of content in the drop zone!
         # Full with lots of information
         class @ContentFull extends @ContentView
-            attributes:
-                class: "content-full"
+            className: "sortable content-full"
             template: 'content_full'
 
         #----------------------------------
         # A single piece of recent content!
         # Just the basic info
         class @ContentMinimal extends @ContentView
-            attributes:
-                class: "content-minimal"
+            className: "sortable content-minimal"
             template: 'content_small'
 
         #---------------------
