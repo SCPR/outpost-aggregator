@@ -92,7 +92,8 @@ class outpost.Aggregator
                 # Build the Drop Zone section
                 @dropZone = new outpost.Aggregator.Views.DropZone
                     collection: @collection # The bootstrapped content
-                    base: @
+                    base: @,
+                    limit: @options.dropLimit
 
                 @
 
@@ -132,7 +133,14 @@ class outpost.Aggregator
             #---------------------
 
             initialize: ->
-                @base = @options.base
+                @base   = @options.base
+                @limit  = @options.limit
+
+                # Is there a limit? Add a notification to the top of the
+                # drop zone to let them know.
+                if @limit
+                    @limitNotification =
+                        new outpost.Notification(@$el, "info", "Limit")
 
                 # Setup the container, render the template,
                 # and then add in the el (the list)
@@ -140,14 +148,6 @@ class outpost.Aggregator
                 @container.html @template
                 @container.append @$el
                 @helper = $("<h1 />").html("Drop Content Here")
-
-                # Is there a limit? Add a notification to the top of the
-                # drop zone to let them know.
-                @limit = @options.limit
-
-                if @limit
-                    @limitNotification =
-                        new outpost.Notification(@$el, "info", "Limit")
 
                 @render()
 
