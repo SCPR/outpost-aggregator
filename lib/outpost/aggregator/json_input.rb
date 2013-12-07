@@ -42,24 +42,39 @@ module Outpost
         def process_json_input_for(name, json)
           return if json.empty?
           name = name.to_s
+          reflection = self.class.reflect_on_association(name.to_sym)
 
           json = Array(JSON.parse(json)).sort_by { |c| c["position"].to_i }
-          loaded = []
 
-          json.each do |object_hash|
-            if object = Outpost.obj_by_key(object_hash["id"])
-              new_object = build_association_for(name, object_hash, object)
-              loaded.push(new_object) if new_object
+
+          if reflection.collection?
+            loaded = []
+
+            json.each do |object_hash|
+              if object = Outpost.obj_by_key(object_hash["id"])
+                new_object = build_association_for(name, object_hash, object)
+                loaded.push(new_object) if new_object
+              end
             end
-          end
 
-          loaded_json  = Aggregator.array_to_simple_json(loaded)
-          current_json = current_json_for(name)
+            loaded_json  = Aggregator.array_to_simple_json(loaded)
+            current_json = current_json_for(name)
 
-          if current_json != loaded_json
-            # This actually opens a DB transaction and saves stuff.
-            # This is Rails behavior.
-            self.send("#{name}=", loaded)
+            if current_json != loaded_json
+              # This actually opens a DB transaction and saves stuff.
+              # This is Rails behavior.
+              self.send("#{name}=", loaded)
+            end
+          else
+            object_hash = json.first
+
+            if object_hash.present?
+              if object = Outpost.obj_by_key(object_hash["id"])
+                build_association_for(name, object_hash, object)
+              end
+            else
+              self.send("#{name}=", nil)
+            end
           end
 
           self.send(name)
