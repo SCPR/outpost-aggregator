@@ -1,13 +1,19 @@
-## 1.1.0
+## 1.1.1
 ### Additions
-* Added a `dropLimit`, for specifying the number of articles allowed in the
-  DropZone. By default, this is "null", which means "no limit".
+* Added a `dropLimit` in the view options, for specifying the number of articles allowed in the DropZone. By default, this is "null", which means "no limit".
 * Added notifications for Limit, and a limit counter
+* Specify that only ".sortable" nodes should be sortable
+* Added support for Singular associations. Your `build_association` method should
+  just set the association via `self.content = content`.
 
 ### Changes
 * Removed old Secretary hooks.
 * All Outpost object now have a "simple_json" method, which just returns a
   hash with the ID. This should be overridden in most cases.
+
+
+## 1.1.0
+Yanked
 
 
 ## 1.0.0
