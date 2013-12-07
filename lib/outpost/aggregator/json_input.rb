@@ -3,6 +3,15 @@ module Outpost
     module JsonInput
       extend ActiveSupport::Concern
 
+      # The default simple JSON for all objects.
+      # This catches one-to-one and many-to-one associations.
+      # It should be overridden for many-to-many associations.
+      def simple_json
+        @simple_json ||= {
+          "id" => self.respond_to?(:obj_key) ? self.obj_key : self.id
+        }
+      end
+
       module ClassMethods
         def accepts_json_input_for(name)
           include InstanceMethodsOnActivation
