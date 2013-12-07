@@ -1,3 +1,8 @@
+## 1.1.2
+### Fixes
+* Fixed dropLimit
+
+
 ## 1.1.1
 ### Additions
 * Added a `dropLimit` in the view options, for specifying the number of articles allowed in the DropZone. By default, this is "null", which means "no limit".
