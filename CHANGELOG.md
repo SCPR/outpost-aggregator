@@ -2,6 +2,13 @@
 ### Fixes
 * Fixed a z-index issue between dropzone empty message and alerts.
 
+### Changes
+* Deprecated `dropLimit`. Replacement is `dropMaxLimit`.
+
+### Additions
+* Added `dropMinLimit` to view options to notify the user when the minimum limit isn't satisfied. (Default: 0)
+* Added a `dropRejectOverflow` option to determine whether or not the aggregator should reject upper-limit overflow. (default: true)
+
 
 ## 1.1.2
 ### Fixes

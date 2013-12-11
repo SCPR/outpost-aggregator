@@ -52,8 +52,10 @@ class outpost.Aggregator
         class @Base extends Backbone.View
             template: JST[Aggregator.TemplatePath + 'base']
             defaults:
-                active: "recent"
-                dropLimit: null
+                active              : "recent"
+                dropMaxLimit        : null,
+                dropMinLimit        : 0
+                dropRejectOverflow  : true
 
             #---------------------
 
@@ -89,11 +91,23 @@ class outpost.Aggregator
                 @search        = new outpost.Aggregator.Views.Search(base: @)
                 @url           = new outpost.Aggregator.Views.URL(base: @)
 
+                # Deprecation notice for dropLimit
+                if @options.dropLimit
+                    console.warn(
+                        "[outpost-aggregator] dropLimit is deprecated. " +
+                        "Use dropMaxLimit and dropMinLimit")
+
+                    if !@options.dropMaxLimit
+                        @options.dropMaxLimit = @options.dropLimit
+
+
                 # Build the Drop Zone section
                 @dropZone = new outpost.Aggregator.Views.DropZone
                     collection: @collection # The bootstrapped content
                     base: @,
-                    limit: @options.dropLimit
+                    minLimit        : @options.dropMinLimit,
+                    maxLimit        : @options.dropMaxLimit,
+                    rejectOverflow  : @options.dropRejectOverflow
 
                 @
 
@@ -118,7 +132,7 @@ class outpost.Aggregator
                     new outpost.Notification(el, "warning",
                         "That content is already in the drop zone.")
 
-                limitReached: (el) ->
+                maxLimitReached: (el) ->
                     new outpost.Notification(el, "warning",
                         "The limit has been reached. Remove an article first.")
 
@@ -134,11 +148,16 @@ class outpost.Aggregator
 
             initialize: ->
                 @base   = @options.base
-                @limit  = @options.limit
+
+                @minLimit           = @options.minLimit
+                @maxLimit           = @options.maxLimit
+                @rejectOverflow     = @options.rejectOverflow
 
                 # Is there a limit? Add a notification to the top of the
-                # drop zone to let them know.
-                if @limit
+                # drop zone to let them know. For minLimit, we're taking
+                # advantage of 0 as falsey in Javascript. For maxLimit,
+                # the default is null, which is also falsey.
+                if @maxLimit or @minLimit
                     @limitNotification =
                         new outpost.Notification(@$el, "info", "Limit")
 
@@ -352,11 +371,16 @@ class outpost.Aggregator
             # Moves a model from the "found" section into the drop zone.
             # Converts its view into a ContentFull view.
             move: (el) ->
-                # If the limit has already been reached.
+                # If the limit has already been reached, and we get here
+                # (i.e. we're trying to add another article), don't let
+                # the user add it. For minimum limits, we'll allow them
+                # to drop below the min limit, but will just warn them
+                # about it.
                 # The updateLimitNotification() function should
                 # warn the user about this.
-                if @limitReached()
-                    @alert("limitReached")
+                if @maxLimit and @rejectOverflow and
+                @collection.length >= @maxLimit
+                    @alert("maxLimitReached")
                     return
 
                 id = el.attr("data-id")
@@ -439,23 +463,40 @@ class outpost.Aggregator
 
 
             # Check if the limit has been reached, only if it exists.
-            limitReached: ->
-                @limit and @collection.length >= @limit
+            minLimitOk: ->
+                return true if !@minLimit
+                @collection.length >= @minLimit
+
+            maxLimitOk: ->
+                return true if !@maxLimit
+                @collection.length <= @maxLimit
+
+            withinRange: ->
+                @minLimitOk() and @maxLimitOk()
 
 
             # Updates the limit notification.
             # Updates the count, and changes the type if necessary.
             updateLimitNotification: ->
                 return if not @limitNotification
+                @limitNotification.message = ""
 
-                @limitNotification.message =
-                    "<strong>Limit:</strong> " +
-                    "#{@collection.length} / #{@limit}"
+                if @maxLimit
+                    @limitNotification.message +=
+                        ("<strong>Limit:</strong> " +
+                        "#{@collection.length} of #{@maxLimit}")
 
-                if @limitReached()
+                if @maxLimit and @minLimit
+                    @limitNotification.message += "&nbsp;|&nbsp;"
+
+                if @minLimit
+                    @limitNotification.message +=
+                        "<strong>Minimum:</strong> #{@minLimit}"
+
+                if @withinRange()
                     @limitNotification.type = "success"
                 else
-                    @limitNotification.type = "info"
+                    @limitNotification.type = "error"
 
                 @limitNotification.rerender()
 
