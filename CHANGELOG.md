@@ -1,3 +1,8 @@
+## 1.1.3 (unreleased)
+### Fixes
+* Fixed a z-index issue between dropzone empty message and alerts.
+
+
 ## 1.1.2
 ### Fixes
 * Fixed dropLimit
