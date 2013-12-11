@@ -18,7 +18,9 @@
   .drop-zone.empty {
     position: relative;
     color: $grayLight;
+
     h1 {
+      z-index: 0;
       position: absolute;
       top: 60px;
       left: 50px;
@@ -28,6 +30,12 @@
   .drop-zone {
     max-height: 500px;
     overflow: auto;
+
+    .alert {
+      // Make alerts show in front of "Empty Message"
+      z-index: 1;
+      position: relative;
+    }
   }
 
   .content-list, .help-content {
