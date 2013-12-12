@@ -479,17 +479,18 @@ class outpost.Aggregator
             # Updates the count, and changes the type if necessary.
             updateLimitNotification: ->
                 return if not @limitNotification
-                @limitNotification.message = ""
+                spacer = "&nbsp;|&nbsp;"
+
+                @limitNotification.message =
+                    "<strong>Count:</strong> #{@collection.length}"
 
                 if @maxLimit
+                    @limitNotification.message += spacer
                     @limitNotification.message +=
-                        ("<strong>Limit:</strong> " +
-                        "#{@collection.length} of #{@maxLimit}")
-
-                if @maxLimit and @minLimit
-                    @limitNotification.message += "&nbsp;|&nbsp;"
+                        "<strong>Maximum:</strong> #{@maxLimit}"
 
                 if @minLimit
+                    @limitNotification.message += spacer
                     @limitNotification.message +=
                         "<strong>Minimum:</strong> #{@minLimit}"
 
