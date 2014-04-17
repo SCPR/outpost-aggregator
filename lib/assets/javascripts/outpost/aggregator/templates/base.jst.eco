@@ -1,45 +1,45 @@
 <div class="row">
-  <div id="aggregator-dropzone" class="content-bucket span5">
+  <div class="aggregator-dropzone content-bucket span5">
     Loading content...
   </div>
 
   <div class="span4">
     <ul class="nav nav-tabs">
       <li class="<%= 'active' if @active is 'recent' %>">
-        <a href="#aggregator-recent-content" data-toggle="tab">Recent</a>
+        <a href="#<%=@prefix%>-aggregator-recent-content" data-toggle="tab">Recent</a>
       </li>
 
       <li class="<%= 'active' if @active is 'search' %>">
-        <a href="#aggregator-search" data-toggle="tab">Search</a>
+        <a href="#<%=@prefix%>-aggregator-search" data-toggle="tab">Search</a>
       </li>
 
       <li class"<%= 'active' if @active is 'url' %>">
-        <a href="#aggregator-url" data-toggle="tab">URL</a>
+        <a href="#<%=@prefix%>-aggregator-url" data-toggle="tab">URL</a>
       </li>
 
       <li class="<%= 'active' if @active is 'help' %>">
-        <a href="#aggregator-help" data-toggle="tab">Help</a>
+        <a href="#<%=@prefix%>-aggregator-help" data-toggle="tab">Help</a>
       </li>
     </ul>
 
     <div class="tab-content">
       <!-- Recent Content Tab -->
-      <div class="tab-pane<%= ' active' if @active is 'recent' %>" id="aggregator-recent-content">
+      <div class="aggregator-recent-content tab-pane<%= ' active' if @active is 'recent' %>" id="<%=@prefix%>-aggregator-recent-content">
         Loading Recent Content...
       </div>
 
       <!-- Search Tab -->
-      <div class="tab-pane<%= ' active' if @active is 'search' %>" id="aggregator-search">
+      <div class="aggregator-search tab-pane<%= ' active' if @active is 'search' %>" id="<%=@prefix%>-aggregator-search">
         Loading Search...
       </div>
 
       <!-- URL Import Tab -->
-      <div class="tab-pane<%= ' active' if @active is 'url' %>" id="aggregator-url">
+      <div class="aggregator-url tab-pane<%= ' active' if @active is 'url' %>" id="<%=@prefix%>-aggregator-url">
         Loading URL Import...
       </div>
 
       <!-- Help Tab -->
-      <div class="tab-pane<%= ' active' if @active is 'help' %>" id="aggregator-help">
+      <div class="aggregator-help tab-pane<%= ' active' if @active is 'help' %>" id="<%=@prefix%>-aggregator-help">
         <ul class="help-content">
           <li>The gray area on the left is referred to as the "<strong>Drop Zone</strong>".</li>
           <hr />
@@ -58,7 +58,7 @@
               <li>"Back" shows the previous page of stories if available</li>
               <li>"Next" shows the next page stories if available</li>
               <li>
-                The "Refresh" icon (<i class="icon-refresh"></i>) refreshes the current page. 
+                The "Refresh" icon (<i class="icon-refresh"></i>) refreshes the current page.
                 This is is useful if you have been moving content out of the list and want to get it all back.
               </li>
             </ul>
@@ -68,13 +68,13 @@
           <h4>Importing content</h4>
           <li><strong>Recent Tab</strong>: Drag content from the "Recent" tab into the Drop Zone</strong</li>
           <li>
-            <strong>Search Tab</strong>: 
-            Use the "Search" tab to find older content. 
+            <strong>Search Tab</strong>:
+            Use the "Search" tab to find older content.
             Dragging from the Search panel works the same as from the Recent panel.
           </li>
           <li>
-            <strong>Via URL</strong>: 
-            Drag any Content URL into the Drop Zone. 
+            <strong>Via URL</strong>:
+            Drag any Content URL into the Drop Zone.
             Alternatively, you can paste a URL into the form in the "URL" tab and click "Import".<br />
           </li>
           <hr />

@@ -1,3 +1,8 @@
+## 1.2.0 (unreleased)
+### Fixes
+* Now you can have multiple aggregators on a single page.
+
+
 ## 1.1.3 (2014-03-19)
 ### Fixes
 * Fixed a z-index issue between dropzone empty message and alerts.

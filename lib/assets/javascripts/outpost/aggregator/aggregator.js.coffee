@@ -84,7 +84,11 @@ class outpost.Aggregator
 
             render: ->
                 # Build the skeleton. We'll fill everything in next.
-                @$el.html @template(active: @options.active)
+                # The prefix is for the tab IDs
+                @$el.html @template(
+                    active: @options.active
+                    prefix: @options.el.attr('id')
+                )
 
                 # Build each of the tabs
                 @recentContent = new outpost.Aggregator.Views.RecentContent(base: @)
@@ -117,7 +121,7 @@ class outpost.Aggregator
         # Gets filled with ContentFull views
         class @DropZone extends Backbone.View
             template: JST[Aggregator.TemplatePath + 'drop_zone']
-            container: "#aggregator-dropzone"
+            container: ".aggregator-dropzone"
             tagName: 'ul'
             attributes:
                 class: "drop-zone well"
@@ -163,7 +167,7 @@ class outpost.Aggregator
 
                 # Setup the container, render the template,
                 # and then add in the el (the list)
-                @container = $(@container)
+                @container = $(@container, @base.$el)
                 @container.html @template
                 @container.append @$el
                 @helper = $("<h1 />").html("Drop Content Here")
@@ -345,8 +349,8 @@ class outpost.Aggregator
                 # render it, highlight it
                 # If it does already exist, then just return false
                 if not @collection.get model.id
-                    view = new outpost.Aggregator.Views.ContentFull _.extend @base.options.viewOptions,
-                        model: model
+                    view = new outpost.Aggregator.Views.ContentFull(
+                        _.extend @base.options.viewOptions, model: model)
 
                     @$el.append view.render()
                     @highlightSuccess(view.$el)
@@ -560,7 +564,7 @@ class outpost.Aggregator
                 @collection.bind "reset", (collection, options) =>
                     @base.foundCollection.add collection.models
 
-                @container  = $(@container)
+                @container  = $(@container, @base.$el)
                 @container.html @$el
 
                 @render()
@@ -710,7 +714,7 @@ class outpost.Aggregator
 
                 # Make the Results div Sortable
                 @resultsEl.sortable
-                    connectWith: "#aggregator-dropzone .drop-zone"
+                    connectWith: ".aggregator-dropzone .drop-zone"
 
                 @
 
@@ -721,8 +725,8 @@ class outpost.Aggregator
         # Note that because of Pagination, the list of content is
         # stored in @resultsEl, not @el
         class @RecentContent extends @ContentList
-            container: "#aggregator-recent-content"
-            resultsId: "#aggregator-recent-content-results"
+            container: ".aggregator-recent-content"
+            resultsId: ".aggregator-recent-content-results"
             template: JST[Aggregator.TemplatePath + 'recent_content']
 
             #---------------------
@@ -754,8 +758,8 @@ class outpost.Aggregator
         # @render() is for rendering the full section.
         # Use @renderCollection for rendering just the search results.
         class @Search extends @ContentList
-            container: "#aggregator-search"
-            resultsId: "#aggregator-search-results"
+            container: ".aggregator-search"
+            resultsId: ".aggregator-search-results"
             template: JST[Aggregator.TemplatePath + "search"]
             events:
                 "click .pagination a" : "changePage"
@@ -783,7 +787,7 @@ class outpost.Aggregator
                 _.defaults params,
                     limit: @per_page
                     page: 1
-                    query: $("#aggregator-search-input", @$el).val()
+                    query: $(".aggregator-search-input", @$el).val()
 
                 @_fetch(params)
                 false # to keep the Rails form from submitting
@@ -794,8 +798,8 @@ class outpost.Aggregator
         # Inherits from @ContentList but doesn't actually
         # need all of its goodies. That's okay.
         class @URL extends @ContentList
-            container: "#aggregator-url"
-            resultsId: "#aggregator-url-results"
+            container: ".aggregator-url"
+            resultsId: ".aggregator-url-results"
             template: JST[Aggregator.TemplatePath + "url"]
             events:
                 "click a.btn" : "importUrl"
@@ -827,7 +831,7 @@ class outpost.Aggregator
             _fetch: (params={}) ->
                 @transitionStart()
 
-                input = $("#aggregator-url-input", @$el)
+                input = $(".aggregator-url-input", @$el)
                 url   = input.val()
 
                 @base.importUrl url,
