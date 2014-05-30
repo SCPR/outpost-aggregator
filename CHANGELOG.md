@@ -1,4 +1,4 @@
-## 1.2.0 (unreleased)
+## 1.2.0
 ### Fixes
 * Now you can have multiple aggregators on a single page.
 
