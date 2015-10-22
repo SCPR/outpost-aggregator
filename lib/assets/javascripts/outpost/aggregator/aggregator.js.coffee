@@ -24,20 +24,20 @@ class outpost.Aggregator
         params: {}
         viewOptions: {}
 
-    constructor: (el, input, currentContentJSON, incomingReferencesJSON={}, options={}) ->
+    constructor: (options={}) ->
         @options = _.defaults options, @defaults
 
-        @el    = $(el)
-        @input = $(input)
+        @el    = $(@options.el)
+        @inputEl = $(@options.inputEl)
 
         # Set the type of API we're dealing with
         apiClass = if @options.apiType is "public" then "ContentCollection" else "PrivateContentCollection"
 
         @baseView = new outpost.Aggregator.Views.Base _.extend options.view || {},
             el              : @el
-            collection      : new outpost.ContentAPI[apiClass](currentContentJSON)
-            incomingReferencesCollection: new outpost.ContentAPI[apiClass](incomingReferencesJSON)
-            input           : @input
+            collection      : new outpost.ContentAPI[apiClass](@options.collection)
+            referenceCollection: if @options.referenceCollection then (new outpost.ContentAPI[apiClass](@options.referenceCollection)) else []
+            input           : @inputEl
             apiClass        : apiClass
             params          : @options.params
             viewOptions     : @options.viewOptions
@@ -116,20 +116,20 @@ class outpost.Aggregator
 
                 @
 
-                if @options.incomingReferencesCollection.length > 0
-                    @incomingReferencesView = new outpost.Aggregator.Views.IncomingReferencesView
+                if @options.referenceCollection.length > 0
+                    @referenceReferencesView = new outpost.Aggregator.Views.ReferencesView
                         base: @
-                        collection: @options.incomingReferencesCollection
+                        collection: @options.referenceCollection
 
 
         #----------------------------------
 
-        class @IncomingReferencesView extends Backbone.View
-            template: JST[Aggregator.TemplatePath + 'incoming_references']
-            container: ".aggregator-incoming-references"
+        class @ReferencesView extends Backbone.View
+            template: JST[Aggregator.TemplatePath + 'content_references']
+            container: ".aggregator-content-references"
             tagName: 'ul'
             attributes:
-                class: "incoming-references-list"
+                class: "content-references-list"
             initialize: ->
                 @base   = @options.base
                 @container = $(@container, @base.$el)
@@ -137,8 +137,9 @@ class outpost.Aggregator
                 @container.append @$el
                 @render()
             render: ->
+                debugger
                 @collection.each (model) =>
-                    view = new outpost.Aggregator.Views.IncomingReference
+                    view = new outpost.Aggregator.Views.ContentReference
                         model: model
 
                     @$el.append view.render()
@@ -922,10 +923,10 @@ class outpost.Aggregator
         #----------------------------------
         # A small view for another piece of
         # content referring to the current one
-        class @IncomingReference extends Backbone.View
+        class @ContentReference extends Backbone.View
             tagName: 'li'
             className: ""
-            template: JST[Aggregator.TemplatePath + 'incoming_reference']
+            template: JST[Aggregator.TemplatePath + 'content_reference']
             render: ->
                 @$el.html @template(content: @model.toJSON())
                 @$el
