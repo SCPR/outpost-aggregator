@@ -137,7 +137,6 @@ class outpost.Aggregator
                 @container.append @$el
                 @render()
             render: ->
-                debugger
                 @collection.each (model) =>
                     view = new outpost.Aggregator.Views.ContentReference
                         model: model
