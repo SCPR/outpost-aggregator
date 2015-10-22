@@ -38,6 +38,11 @@
     }
   }
 
+  ul.incoming-references-list {
+    max-height: 100px;
+    overflow-y: scroll;
+  }
+
   .content-list, .help-content {
     max-height: 455px;
     overflow: auto;

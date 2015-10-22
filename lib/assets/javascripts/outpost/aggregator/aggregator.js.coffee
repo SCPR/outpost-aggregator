@@ -24,7 +24,7 @@ class outpost.Aggregator
         params: {}
         viewOptions: {}
 
-    constructor: (el, input, json, options={}) ->
+    constructor: (el, input, currentContentJSON, incomingReferencesJSON={}, options={}) ->
         @options = _.defaults options, @defaults
 
         @el    = $(el)
@@ -35,7 +35,8 @@ class outpost.Aggregator
 
         @baseView = new outpost.Aggregator.Views.Base _.extend options.view || {},
             el              : @el
-            collection      : new outpost.ContentAPI[apiClass](json)
+            collection      : new outpost.ContentAPI[apiClass](currentContentJSON)
+            incomingReferencesCollection: new outpost.ContentAPI[apiClass](incomingReferencesJSON)
             input           : @input
             apiClass        : apiClass
             params          : @options.params
@@ -115,6 +116,33 @@ class outpost.Aggregator
 
                 @
 
+                if @options.incomingReferencesCollection.length > 0
+                    @incomingReferencesView = new outpost.Aggregator.Views.IncomingReferencesView
+                        base: @
+                        collection: @options.incomingReferencesCollection
+
+
+        #----------------------------------
+
+        class @IncomingReferencesView extends Backbone.View
+            template: JST[Aggregator.TemplatePath + 'incoming_references']
+            container: ".aggregator-incoming-references"
+            tagName: 'ul'
+            attributes:
+                class: "incoming-references-list"
+            initialize: ->
+                @base   = @options.base
+                @container = $(@container, @base.$el)
+                @container.html @template
+                @container.append @$el
+                @render()
+            render: ->
+                @collection.each (model) =>
+                    view = new outpost.Aggregator.Views.IncomingReference
+                        model: model
+
+                    @$el.append view.render()
+                @
 
         #----------------------------------
         # The drop-zone!
@@ -891,4 +919,13 @@ class outpost.Aggregator
             className: "sortable content-minimal"
             template: 'content_small'
 
-        #---------------------
+        #----------------------------------
+        # A small view for another piece of
+        # content referring to the current one
+        class @IncomingReference extends Backbone.View
+            tagName: 'li'
+            className: ""
+            template: JST[Aggregator.TemplatePath + 'incoming_reference']
+            render: ->
+                @$el.html @template(content: @model.toJSON())
+                @$el

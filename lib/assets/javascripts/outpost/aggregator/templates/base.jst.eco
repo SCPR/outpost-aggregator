@@ -1,6 +1,9 @@
 <div class="row">
-  <div class="aggregator-dropzone content-bucket span5">
-    Loading content...
+  <div class="span5">
+    <div class="aggregator-incoming-references"></div>
+    <div class="aggregator-dropzone content-bucket">
+      Loading content...
+    </div>
   </div>
 
   <div class="span4">
