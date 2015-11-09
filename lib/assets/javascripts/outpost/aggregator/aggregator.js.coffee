@@ -24,19 +24,20 @@ class outpost.Aggregator
         params: {}
         viewOptions: {}
 
-    constructor: (el, input, json, options={}) ->
+    constructor: (options={}) ->
         @options = _.defaults options, @defaults
 
-        @el    = $(el)
-        @input = $(input)
+        @el    = $(@options.el)
+        @inputEl = $(@options.inputEl)
 
         # Set the type of API we're dealing with
         apiClass = if @options.apiType is "public" then "ContentCollection" else "PrivateContentCollection"
 
         @baseView = new outpost.Aggregator.Views.Base _.extend options.view || {},
             el              : @el
-            collection      : new outpost.ContentAPI[apiClass](json)
-            input           : @input
+            collection      : new outpost.ContentAPI[apiClass](@options.collection)
+            referenceCollection: if @options.referenceCollection then (new outpost.ContentAPI[apiClass](@options.referenceCollection)) else []
+            input           : @inputEl
             apiClass        : apiClass
             params          : @options.params
             viewOptions     : @options.viewOptions
@@ -115,6 +116,33 @@ class outpost.Aggregator
 
                 @
 
+                if @options.referenceCollection.length > 0
+                    @referenceReferencesView = new outpost.Aggregator.Views.ReferencesView
+                        base: @
+                        collection: @options.referenceCollection
+
+
+        #----------------------------------
+
+        class @ReferencesView extends Backbone.View
+            template: JST[Aggregator.TemplatePath + 'content_references']
+            container: ".aggregator-content-references"
+            tagName: 'ul'
+            attributes:
+                class: "content-references-list"
+            initialize: ->
+                @base   = @options.base
+                @container = $(@container, @base.$el)
+                @container.html @template
+                @container.append @$el
+                @render()
+            render: ->
+                @collection.each (model) =>
+                    view = new outpost.Aggregator.Views.ContentReference
+                        model: model
+
+                    @$el.append view.render()
+                @
 
         #----------------------------------
         # The drop-zone!
@@ -891,4 +919,13 @@ class outpost.Aggregator
             className: "sortable content-minimal"
             template: 'content_small'
 
-        #---------------------
+        #----------------------------------
+        # A small view for another piece of
+        # content referring to the current one
+        class @ContentReference extends Backbone.View
+            tagName: 'li'
+            className: ""
+            template: JST[Aggregator.TemplatePath + 'content_reference']
+            render: ->
+                @$el.html @template(content: @model.toJSON())
+                @$el

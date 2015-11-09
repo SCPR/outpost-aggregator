@@ -38,6 +38,19 @@
     }
   }
 
+  ul.content-references-list {
+    max-height: 100px;
+    overflow-y: scroll;
+    li {
+      line-height: 10px;
+      padding-bottom: 8px;
+      h6 {
+        margin: 0px;
+
+      }
+    }
+  }
+
   .content-list, .help-content {
     max-height: 455px;
     overflow: auto;
