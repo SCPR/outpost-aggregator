@@ -578,7 +578,7 @@ class outpost.Aggregator
             initialize: ->
                 @base     = @options.base
                 @page     = 1
-                @per_page = @base.options.params.limit || 10
+                @per_page = @base.options.params?.limit || 10
 
                 # Grab Recent Content using ContentAPI
                 # Render the list
