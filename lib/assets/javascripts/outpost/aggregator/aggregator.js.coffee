@@ -796,7 +796,7 @@ class outpost.Aggregator
 
             #---------------------
             # Just a simple proxy to #request to fill in the args properly
-            # Can't make the event delegate straigh to #request because
+            # Can't make the event delegate straight to #request because
             # Backbone automatically passes the event object as the
             # argument, but #request doesn't handle that.
             search: (event) ->
@@ -816,6 +816,11 @@ class outpost.Aggregator
                     limit: @per_page
                     page: 1
                     query: $(".aggregator-search-input", @$el).val()
+                    # Separate 'search_types' can be specified
+                    # if we want different types to be searched
+                    # for than those used for other queries like
+                    # most recent content.
+                    types: @base.options.params.search_types
 
                 @_fetch(params)
                 false # to keep the Rails form from submitting
